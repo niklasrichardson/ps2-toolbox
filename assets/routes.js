@@ -18,5 +18,15 @@ document.addEventListener("DOMContentLoaded", () => {
     location.replace(destination);
   } else if (location.hash === "#about" && document.querySelector(".brand[aria-current=page]")) {
     location.replace(document.querySelector(".about-link").href);
+  } else if (location.hash) {
+    const fragment = location.hash.slice(1);
+    const moved = Array.from(document.querySelectorAll("[data-legacy-fragments]"))
+      .find((link) => link.dataset.legacyFragments.split(" ").includes(fragment));
+    if (moved) {
+      const destination = new URL(moved.href);
+      destination.search = location.search;
+      destination.hash = location.hash;
+      location.replace(destination);
+    }
   }
 });

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-version" content="2.1.0">
+  <meta name="description" content="Check documented memory options, board revisions and connector types.">
+  <title>Model and planar references · PS/2 Toolbox</title>
+  <link rel="stylesheet" href="../../assets/carbon.css">
+  <script src="../../assets/routes.js" defer></script>
+  <link rel="stylesheet" href="../memory.css">
+</head>
+<body>
+  <header class="masthead">
+  <a class="brand" href="../../">PS/2 Toolbox</a>
+  <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
+    <a href="../../mca-lookup/" data-tool="mca">MCA lookup</a>
+    <a href="../../memory-lookup/" data-tool="memory" aria-current="page">Memory lookup</a>
+  </nav>
+  <a class="about-link cds--link" href="../../about/">About</a>
+</header>
+
+  <svg width="0" height="0" hidden aria-hidden="true">
+    <symbol id="select-chevron" viewBox="0 0 16 16"><path d="M8 11 3 6l.7-.7L8 9.6l4.3-4.3.7.7z"/></symbol>
+  </svg>
+  <main class="shell">
+    <div class="hero">
+      <h1 id="model-references">Model and planar references</h1>
+      <p>Check documented memory options, board revisions and connector types.</p>
+      <nav class="memory-nav" aria-label="Memory Lookup pages">
+        <a class="cds--link" href="../">Search memory</a>
+        <a class="cds--link" href="../identify-simm/">Identify a 72-pin SIMM</a>
+        <a class="cds--link" href="../model-and-planar-references/" aria-current="page">Model and planar references</a>
+        <a class="cds--link" href="../part-cross-references/">Part cross-references, adapters and pinouts</a>
+      </nav>
+    </div>
+    <section id="reference-heading" class="panel reference" aria-labelledby="model-references">
+      <p>Check the board revision or model suffix before choosing a module. Maximums can refer to the planar, the whole machine or a particular configuration.</p>
+      <div class="evidence-search">
+        <label class="cds--label" for="evidence-query">Find a model, planar or part in the notes</label>
+        <input class="cds--text-input cds--search-input" id="evidence-query" type="text" placeholder="8555, Lacuna, 87F9977…" autocomplete="off">
+      </div>
+      <p class="secondary" id="evidence-status" role="status"></p>
+      <ul id="evidence-notes" class="evidence-list"></ul>
+      <details id="planar-audit">
+        <summary>PS/2 planar and connector check</summary>
+        <p>Board and connector observations are shown separately from part compatibility. A dash means the linked board evidence did not establish a connector type.</p>
+        <div class="evidence-search">
+          <label class="cds--label" for="planar-query">Filter by board or connector</label>
+          <input class="cds--search-input" id="planar-query" placeholder="P70, Greenock, 30-pin…" autocomplete="off">
+        </div>
+        <p id="planar-status" class="secondary" role="status"></p>
+        <div class="table-scroll" role="region" aria-label="Planar and connector results" tabindex="0">
+          <table class="cds--data-table cds--data-table--zebra small-table">
+            <thead><tr><th scope="col">Planar</th><th scope="col">Connector</th><th scope="col">Observation</th><th scope="col">Source</th></tr></thead>
+            <tbody id="planar-rows"></tbody>
+          </table>
+        </div>
+      </details>
+      <details id="reference-index">
+        <summary>Browse the source inventory</summary>
+        <p>These documents form the audit inventory. Some identify a board or machine without specifying compatible modules.</p>
+        <div id="source-inventory"></div>
+      </details>
+    </section>
+    <noscript><p class="empty">Enable JavaScript to use the memory catalogue.</p></noscript>
+  </main>
+  <footer class="shell secondary">PS/2 Toolbox · Version 2.1.0</footer>
+  <script src="../memory-data.js" defer></script>
+  <script src="../memory-common.js" defer></script>
+  <script src="../model-and-planar-references.js" defer></script>
+</body>
+</html>
