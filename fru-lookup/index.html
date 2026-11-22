@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-version" content="2.4.0">
+  <meta name="description" content="Find IBM field replaceable units by FRU, related part number, description or machine type.">
+  <title>FRU Lookup · PS/2 Toolbox</title>
+  <link rel="stylesheet" href="../assets/carbon.css">
+  <link rel="stylesheet" href="./fru.css">
+  <script src="../assets/routes.js" defer></script>
+  <script src="./fru-data.js" defer></script>
+  <script src="./search.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+  <a class="brand" href="../">PS/2 Toolbox</a>
+  <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
+    <a href="../mca-lookup/" data-tool="mca">MCA lookup</a>
+    <a href="../memory-lookup/" data-tool="memory">Memory lookup</a>
+    <a href="../fru-lookup/" data-tool="fru" aria-current="page">FRU lookup</a>
+  </nav>
+  <a class="about-link cds--link" href="../about/">About</a>
+</header>
+
+  <main class="shell">
+    <div class="hero">
+      <h1>FRU Lookup</h1>
+      <p>Find IBM field replaceable units for PS/2, RS/6000, PC Server and other IBM hardware.</p>
+    </div>
+    <section class="controls" aria-label="Search and filters">
+      <div class="search-row">
+        <div>
+          <label class="cds--label" for="query">FRU, related part number, description or machine type</label>
+          <div class="cds--search">
+            <input id="query" class="cds--search-input" type="search"
+                   placeholder="06G8224, rear panel cover, 7013-591…" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="examples" aria-label="Example searches">
+          <button class="cds--tag cds--tag--blue" type="button" data-query="06G8224">06G8224</button>
+          <button class="cds--tag cds--tag--blue" type="button" data-query="76H0284">76H0284</button>
+          <button class="cds--tag cds--tag--blue" type="button" data-query="7013-591">7013-591</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div>
+          <label class="cds--label" for="family">Family</label>
+          <select id="family" class="cds--select-input"><option value="">All families</option></select>
+        </div>
+        <div>
+          <label class="cds--label" for="source">Source</label>
+          <select id="source" class="cds--select-input"><option value="">All sources</option></select>
+        </div>
+        <button id="clear" class="cds--btn cds--btn--tertiary" type="button">Clear search and filters</button>
+      </div>
+    </section>
+    <section class="results" aria-label="FRU results">
+      <div class="result-head">
+        <p id="status" role="status">Loading FRU catalogue…</p>
+        <a class="cds--link" href="../about/#fru-lookup">About the FRU sources</a>
+      </div>
+      <div id="results"></div>
+      <nav id="pagination" class="pagination" aria-label="Result pages" hidden>
+        <button id="previous" class="cds--btn cds--btn--ghost" type="button">Previous</button>
+        <span id="page-label"></span>
+        <button id="next" class="cds--btn cds--btn--ghost" type="button">Next</button>
+      </nav>
+    </section>
+    <noscript><p>Enable JavaScript to search the FRU catalogue.</p></noscript>
+  </main>
+  <footer class="shell">PS/2 Toolbox · Version 2.4.0</footer>
+</body>
+</html>

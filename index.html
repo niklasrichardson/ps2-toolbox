@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="application-version" content="2.3.0">
-  <meta name="description" content="Look up IBM Micro Channel adapters and memory by model, ID or part number.">
+  <meta name="application-version" content="2.4.0">
+  <meta name="description" content="Look up IBM Micro Channel adapters, memory and replacement parts by model, ID or part number.">
   <title>PS/2 Toolbox</title>
   <link rel="stylesheet" href="./assets/carbon.css">
   <script src="./assets/routes.js" defer></script>
@@ -16,7 +16,7 @@
     .hero { padding-block: 3.5rem 2.5rem; }
     .hero h1 { margin: 0; }
     .hero p { max-width: 52ch; margin: .75rem 0 0; color: var(--cds-text-secondary); }
-    .tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
     .tool {
       display: flex; flex-direction: column; min-height: 13rem; padding: 1.5rem;
       border-top: 3px solid var(--cds-border-interactive); background: var(--cds-layer-01);
@@ -41,6 +41,7 @@
   <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
     <a href="./mca-lookup/" data-tool="mca">MCA lookup</a>
     <a href="./memory-lookup/" data-tool="memory">Memory lookup</a>
+    <a href="./fru-lookup/" data-tool="fru">FRU lookup</a>
   </nav>
   <a class="about-link cds--link" href="./about/">About</a>
 </header>
@@ -48,7 +49,7 @@
   <main class="shell">
     <div class="hero">
       <h1>PS/2 Toolbox</h1>
-      <p>Two lookups for identifying Micro Channel adapters and finding memory for IBM hardware.</p>
+      <p>Find Micro Channel adapters, memory and replacement parts for IBM hardware.</p>
     </div>
     <div class="tools" aria-label="Lookup tools">
       <article class="tool">
@@ -61,8 +62,13 @@
         <p>Search by machine model, FRU, option number or module marking. Check listed configurations and look up 72-pin SIMM presence-detect patterns.</p>
         <a class="cds--link" href="./memory-lookup/">Open Memory Lookup <span aria-hidden="true">→</span></a>
       </article>
+      <article class="tool">
+        <h2>FRU Lookup</h2>
+        <p>Find IBM replacement parts by FRU, related part number, description or machine type. Compare the source records for a match.</p>
+        <a class="cds--link" href="./fru-lookup/">Open FRU Lookup <span aria-hidden="true">→</span></a>
+      </article>
     </div>
   </main>
-  <footer class="shell">PS/2 Toolbox · Version 2.3.0</footer>
+  <footer class="shell">PS/2 Toolbox · Version 2.4.0</footer>
 </body>
 </html>
