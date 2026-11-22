@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-version" content="2.1.0">
+  <meta name="description" content="Sources and coverage for the PS/2 Toolbox lookups.">
+  <title>About · PS/2 Toolbox</title>
+  <link rel="stylesheet" href="../assets/carbon.css">
+  <script src="../assets/routes.js" defer></script>
+  <style>
+    :root { font: 100%/1.5 "IBM Plex Sans", system-ui, sans-serif; }
+    body { margin: 0; color: var(--cds-text-primary); background: var(--cds-background); }
+    .shell { width: min(calc(100% - 2rem), 64rem); margin-inline: auto; }
+    .hero { padding-block: 2.5rem 1.5rem; }
+    .hero p, .about p { color: var(--cds-text-secondary); }
+    .about { margin-block: 0 1rem; padding: clamp(1rem, 3vw, 1.5rem); background: var(--cds-layer-01); }
+    .about h2 { font-size: 1.5rem; font-weight: 400; }
+    .about h3 { margin-top: 1.25rem; font-size: 1rem; font-weight: 600; }
+    .about p { max-width: 75ch; margin-top: .5rem; }
+    .source-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: .5rem; margin-top: .5rem; }
+    .source-list li { padding: .75rem; background: var(--cds-background); }
+    .source-list p { font-size: .875rem; }
+    .project-links { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block: 1.5rem; }
+    footer { padding-bottom: 1.5rem; color: var(--cds-text-secondary); font-size: .875rem; }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+  <a class="brand" href="../">PS/2 Toolbox</a>
+  <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
+    <a href="../mca-lookup/" data-tool="mca">MCA lookup</a>
+    <a href="../memory-lookup/" data-tool="memory">Memory lookup</a>
+  </nav>
+  <a class="about-link cds--link" href="../about/" aria-current="page">About</a>
+</header>
+
+  <main class="shell">
+    <div class="hero">
+      <h1>About PS/2 Toolbox</h1>
+      <p>IBM hardware lookups built from public catalogues and technical references.</p>
+    </div>
+    <section class="about" id="mca-lookup" aria-labelledby="mca-heading" tabindex="-1">
+      <h2 id="mca-heading"><a class="cds--link" href="../mca-lookup/">MCA ADF Lookup</a></h2>
+      <p>MCA ADF Lookup brings together public records for Micro Channel adapter files, system boards and companion files. The ID lookups view also includes historical entries without a linked ADF.</p>
+      <h3>Reading the results</h3>
+      <p>Expand a grouped ID to compare variants from different sources. Adapter names and file versions come from the ADF header where available. Versions marked <strong>Catalogue</strong> come from a source listing. A dash indicates an unrecorded value.</p>
+      <h3>Sources</h3>
+      <ul class="source-list">
+        <li><a class="cds--link" href="https://www.ardent-tool.com/adapters/ADF.html">Ardent Tools</a>
+          <p>ADF and companion file catalogue, plus machine names from its <a class="cds--link" href="https://www.ardent-tool.com/tech/PlanarID_List.html">Planar ID list</a>.</p></li>
+        <li><a class="cds--link" href="https://ps-2.kev009.com/mcamafia/mcapage0/adflist1.htm">MCA Mafia</a>
+          <p>Peter Wendt’s five-part ADF collection, hosted by kev009.</p></li>
+        <li><a class="cds--link" href="https://ps-2.kev009.com/pccbbs/adf_files/">IBM PCCBBS mirror</a>
+          <p>ADF file directory from the mirrored IBM bulletin board.</p></li>
+        <li><a class="cds--link" href="https://ps-2.kev009.com/mcabase/mcb/adp/adp00.htm">MCABase</a>
+          <p>Adapter IDs, categories, descriptions and ADF links.</p></li>
+        <li><a class="cds--link" href="https://www.ardent-tool.com/utils/qbmca.html">MCA.DAT (January 2000)</a>
+          <p>Historical adapter ID descriptions from the QBMCA data file.</p></li>
+        <li><a class="cds--link" href="https://www.r3tr0.net/index.php/wondermca-firmware/#tools">WonderMCA vendor</a>
+          <p>R3TR0’s WonderMCA reference disk and <code>@DEAD.ADF</code>.</p></li>
+      </ul>
+    </section>
+    <section id="memory-lookup" class="about" aria-labelledby="memory-heading" tabindex="-1">
+      <h2 id="memory-heading"><a class="cds--link" href="../memory-lookup/">Memory Lookup</a></h2>
+      <p>The lookup joins IBM’s model and part-number tables and adds OEM markings and selected model-specific references. Rows without a machine or card listing can help identify a module. Check the cited model documentation for installation rules and maximum capacity.</p>
+      <p>RS/6000 coverage currently includes the 7011-250 Kingston entries. The RS/6000 memory matrix and IBM service guide below cover additional machines.</p>
+      <p>Use the <a class="cds--link" href="../memory-lookup/#pd-heading">72-pin SIMM guide</a> to decode presence-detect patterns. The <a class="cds--link" href="../memory-lookup/#model-references">model and planar references</a> cover board revisions and connectors.</p>
+      <h3>Sources and further reading</h3>
+      <ul class="source-list">
+        <li><a class="cds--link" href="https://eprm.ardent-tool.com/eprm/f232.htm">IBM EPRM</a><p>Machine and expansion-card matrix, plus the IBM part-number key.</p></li>
+        <li><a class="cds--link" href="https://www.ardent-tool.com/memory/Reference.html">Ardent Tools</a><p>OEM markings and 72-pin SIMM presence-detect patterns.</p></li>
+        <li><a class="cds--link" href="https://ps-2.kev009.com/pcpartnerinfo/ctstips/89c6.htm">IBM Server 95 specifications</a><p>ECC part numbers and matched-pair requirements for 9595-0PG and 9595-0PT.</p></li>
+        <li><a class="cds--link" href="https://www.ibm.com/support/pages/memory-accessories-ibm-pc-server-520">IBM PC Server 520 memory options</a><p>IBM ECC-on-SIMM option and service numbers for listed 8641 models.</p></li>
+        <li><a class="cds--link" href="https://www.kingston.com/en/memory/search/discontinuedmodel/1594/ibm-rs-6000-powerstation-powerserver-250">Kingston RS/6000 250 configurator</a><p>Discontinued modules and installation guidance for the 7011-250.</p></li>
+        <li><a class="cds--link" href="https://ps-2.kev009.com/pccbbs/pc_servers/cf1001us.pdf">IBM PC Server Selection Guide</a><p>Further reading for model limits, kit sizes and MCA versus EISA variants.</p></li>
+        <li><a class="cds--link" href="https://ardent-tool.com/RS6000/rs6000_memory_matrix.html">Ardent Tools RS/6000 memory matrix</a><p>Further reading for base memory cards, SIMMs and board-specific FRUs.</p></li>
+        <li><a class="cds--link" href="https://web-docs.gsi.de/~kraemer/COLLECTION/www.gruftie.net/ibm/rs6000_ps_pdf/Machines/7012-300_Series_Install%2BServiceGuide.pdf">IBM 7012 300 Series service guide</a><p>Further reading for RS/6000 model-specific installation and service information.</p></li>
+        <li><a class="cds--link" href="https://www.ibm.com/support/pages/node/797344">IBM PC Server 500 options</a><p>Four 70 ns ECC options and their service FRUs.</p></li>
+      </ul>
+    </section>
+    <p class="project-links">
+        <a class="cds--link" href="https://github.com/niklasrichardson/ps2-toolbox">View the project on GitHub</a>
+        <a class="cds--link" href="https://github.com/niklasrichardson/ps2-toolbox/issues/new">Report a correction or broken link</a>
+      </p>
+
+  </main>
+  <footer class="shell">PS/2 Toolbox · Version 2.1.0</footer>
+</body>
+</html>

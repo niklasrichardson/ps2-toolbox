@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Search IBM PS/2 Micro Channel adapter description files, planar references and historical adapter IDs.">
+  <meta name="application-version" content="2.1.0">
+  <title>MCA ADF Lookup · PS/2 Toolbox</title>
+  <link rel="stylesheet" href="../assets/carbon.css">
+  <script src="../assets/routes.js" defer></script>
+  <style>
+    :root {
+      --catalogue-mono: Consolas, monospace;
+      font: 100%/1.5 "IBM Plex Sans", system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; color: var(--cds-text-primary); background: var(--cds-background); }
+    button, input, select { font: inherit; }
+    button:not(:disabled) { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--cds-focus); outline-offset: 2px; }
+    .shell { width: min(100% - 4rem, 90rem); margin-inline: auto; }
+    .hero { padding-block: 2rem; }
+    .hero h1 { margin: 0; }
+    .hero p { margin: .5rem 0 0; color: var(--cds-text-secondary); }
+    main { padding-bottom: 2rem; }
+    .controls, .results { background: var(--cds-layer-01); }
+    .controls { padding: 1rem; }
+    .panel-top { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+    .search { flex: 1 1 26rem; }
+    .examples { display: flex; gap: .25rem; align-items: center; min-height: 2.5rem; color: var(--cds-text-secondary); font-size: .875rem; }
+    .examples span { margin-inline-end: .25rem; }
+    .examples .cds--tag { margin: 0; font-family: var(--catalogue-mono); }
+    .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 1rem; margin-top: 1rem; align-items: end; }
+    .filters.with-models { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
+    .filters .cds--select, .result-tools .cds--select { min-width: 0; }
+    .filters #clear { min-block-size: 2.5rem; padding-block: .5rem; }
+    .filters .cds--select-input, .search .cds--search-input, .result-tools .cds--select-input {
+      background-color: var(--cds-field-02);
+    }
+    .filters .cds--select-input:not(:disabled):hover, .result-tools .cds--select-input:hover {
+      background-color: var(--cds-field-hover-02);
+    }
+    .views { margin-block: 1.5rem 1rem; }
+    .views .cds--content-switcher__label { display: flex; align-items: baseline; gap: .5rem; }
+    .view small { font-size: .75rem; font-variant-numeric: tabular-nums; }
+    .result-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; padding: 1rem; }
+    .result-head p { margin: 0; }
+    .result-tools.cds--select { flex-direction: row; align-items: center; gap: .5rem; width: auto; }
+    .result-tools .cds--select-input__wrapper { width: 10.5rem; }
+    .result-tools .cds--label { margin: 0; }
+    .result-tools .cds--select-input { padding-inline-end: 2.5rem; }
+    #status { font-weight: 600; }
+    .secondary { color: var(--cds-text-secondary); font-size: .875rem; }
+    .table-scroll { overflow-x: auto; }
+    .table-scroll:focus-visible { outline-offset: -2px; }
+    .table-scroll .cds--data-table { min-width: 47rem; text-align: start; }
+    .table-scroll .cds--data-table:has(#machine-heading:not([hidden])) { min-width: 55rem; }
+    .table-scroll .cds--data-table th, .table-scroll .cds--data-table td {
+      height: auto; padding: .75rem 1rem; overflow-wrap: anywhere; vertical-align: top;
+    }
+    .table-scroll .cds--data-table th { white-space: nowrap; }
+    .code.cds--link, .record-toggle.cds--link { padding: 0; border: 0; background: transparent; }
+    .code.cds--link { font-family: var(--catalogue-mono); font-weight: 600; }
+    .filename { min-inline-size: 9rem; font-family: var(--catalogue-mono); }
+    .version { font-variant-numeric: tabular-nums; }
+    .record-toggle.cds--link { display: block; margin-top: .25rem; font-size: .75rem; white-space: nowrap; }
+    .record-toggle::after {
+      content: ''; display: inline-block; width: .38rem; height: .38rem; margin-inline-start: .5rem;
+      border: solid currentColor; border-width: 0 1px 1px 0; transform: translateY(-.12rem) rotate(45deg);
+    }
+    .record-toggle[aria-expanded="true"]::after { transform: rotate(225deg); }
+    .variant td:first-child { box-shadow: inset 3px 0 var(--cds-border-interactive); }
+    .row-detail { display: block; margin-top: .25rem; color: var(--cds-text-secondary); font-size: .75rem; }
+    .machine-list { margin: 0; padding-inline-start: 1rem; }
+    .machine-list li + li { margin-top: .25rem; }
+    .empty { margin: 0; padding: 2rem 1rem; border-top: 1px solid var(--cds-border-subtle-01); text-align: center; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; gap: .5rem; border-top: 1px solid var(--cds-border-subtle-01); }
+    .page-footer { padding-bottom: 1.5rem; color: var(--cds-text-secondary); font-size: .875rem; }
+    @media (max-width: 48rem) {
+      .shell { width: calc(100% - 2rem); }
+      .hero { padding-block: 1.5rem; }
+      .hero h1 { font-size: clamp(2rem, 8vw, 2.625rem); }
+      .panel-top { gap: .5rem; }
+      .filters, .filters.with-models { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+      .views { overflow-x: auto; padding-block: .125rem; }
+      .views .cds--content-switcher { min-width: 40rem; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" hidden aria-hidden="true">
+    <symbol id="select-chevron" viewBox="0 0 16 16">
+      <path d="M8 11 3 6l.7-.7L8 9.6l4.3-4.3.7.7z"/>
+    </symbol>
+  </svg>
+  <header class="masthead">
+  <a class="brand" href="../">PS/2 Toolbox</a>
+  <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
+    <a href="../mca-lookup/" data-tool="mca" aria-current="page">MCA lookup</a>
+    <a href="../memory-lookup/" data-tool="memory">Memory lookup</a>
+  </nav>
+  <a class="about-link cds--link" href="../about/">About</a>
+</header>
+
+  <main class="shell">
+    <div class="hero">
+      <h1>MCA ADF Lookup</h1>
+      <p>Find Micro Channel adapter files by POS ID, filename or adapter name.</p>
+    </div>
+    <section class="controls" aria-label="Search and filters">
+      <div class="panel-top">
+        <div class="search">
+          <label class="cds--label" for="query">Search the catalogue</label>
+          <div class="cds--search cds--search--lg">
+            <svg class="cds--search-magnifier-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="6.75" cy="6.75" r="4.25" fill="none" stroke="currentColor"/>
+              <path d="m10 10 4 4" stroke="currentColor"/>
+            </svg>
+            <input class="cds--search-input" id="query" type="search" autocomplete="off" spellcheck="false" placeholder="002D, @8EFE.ADF, SCSI…">
+            <button class="cds--search-close" id="clear-query" type="button" aria-label="Clear search" hidden>
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m12 4-8 8m0-8 8 8" fill="none" stroke="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="examples" aria-label="Example adapter IDs">
+          <span>Try</span><button class="cds--tag cds--tag--blue" type="button" data-example="002D">002D</button>
+          <button class="cds--tag cds--tag--blue" type="button" data-example="8EFE">8EFE</button>
+          <button class="cds--tag cds--tag--blue" type="button" data-example="DEAD">DEAD</button>
+        </div>
+      </div>
+      <div class="filters" id="filters">
+        <div class="cds--select">
+          <label class="cds--label" for="category">Category</label>
+          <div class="cds--select-input__wrapper"><select class="cds--select-input" id="category"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select">
+          <label class="cds--label" for="source">Source</label>
+          <div class="cds--select-input__wrapper"><select class="cds--select-input" id="source"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select">
+          <label class="cds--label" for="kind">File type</label>
+          <div class="cds--select-input__wrapper"><select class="cds--select-input" id="kind"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select" id="model-group" hidden>
+          <label class="cds--label" for="model">Machine</label>
+          <div class="cds--select-input__wrapper"><select class="cds--select-input" id="model"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <button id="clear" type="button" class="cds--btn cds--btn--tertiary cds--btn--md">Clear filters</button>
+      </div>
+    </section>
+    <nav class="views" aria-label="Catalogue views">
+      <div class="cds--content-switcher">
+        <button class="view cds--content-switcher-btn" type="button" data-view="adapters" aria-pressed="true"><span class="cds--content-switcher__label">Adapter ADFs <small></small></span></button>
+        <button class="view cds--content-switcher-btn" type="button" data-view="planars" aria-pressed="false"><span class="cds--content-switcher__label">Planar reference <small></small></span></button>
+        <button class="view cds--content-switcher-btn" type="button" data-view="support" aria-pressed="false"><span class="cds--content-switcher__label">Companion files <small></small></span></button>
+        <button class="view cds--content-switcher-btn" type="button" data-view="lookup" aria-pressed="false"><span class="cds--content-switcher__label">ID lookups <small></small></span></button>
+      </div>
+    </nav>
+    <section class="results" aria-labelledby="status">
+      <div class="result-head">
+        <div>
+          <p id="status" role="status" aria-live="polite">Loading catalogue…</p>
+          <p id="context" class="secondary"></p>
+        </div>
+        <div class="result-tools cds--select">
+          <label class="cds--label" for="display">Display</label>
+          <div class="cds--select-input__wrapper">
+            <select class="cds--select-input" id="display">
+              <option value="grouped">Grouped by ID</option>
+              <option value="all">All records</option>
+            </select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="table-scroll" id="table-scroll" role="region" aria-label="Catalogue results" tabindex="0">
+        <table class="cds--data-table cds--data-table--zebra" aria-label="Matching MCA catalogue records">
+          <thead><tr><th scope="col">Code</th><th scope="col">Filename</th><th scope="col">Version</th>
+            <th scope="col">Adapter name</th><th scope="col">Category</th>
+            <th scope="col">Description</th><th id="machine-heading" scope="col" hidden>Machine reference</th>
+            <th scope="col">Source</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+      </div>
+      <p id="empty" class="empty" hidden>No matching records. Try a different search or clear the filters.</p>
+      <noscript><p class="empty">Enable JavaScript to search the catalogue.</p></noscript>
+      <div id="pagination" class="pagination" hidden>
+        <button type="button" id="previous" class="cds--btn cds--btn--ghost cds--btn--sm">Previous</button>
+        <span id="page-label" class="secondary"></span>
+        <button type="button" id="next" class="cds--btn cds--btn--ghost cds--btn--sm">Next</button>
+      </div>
+    </section>
+  </main>
+  <footer class="shell page-footer">MCA ADF Lookup · Version 2.1.0</footer>
+  <script src="catalogue-data.js"></script>
+  <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    const data = window.ps2LookupData;
+    const records = data.records.map(([
+      code, filename, category, description, source, url, version, sha256, adapterName, versionBasis, kind
+    ]) => {
+      const planar = kind === "Planar ADF" || kind === "Planar support";
+      const models = planar ? data.planars[code] || [] : [];
+      const view = kind === "ADF" ? "adapters" : kind === "ID lookup" ? "lookup" :
+        kind === "Planar ADF" || kind === "Expansion unit ADF" ? "planars" : "support";
+      const search = [code, filename, category, description, source, kind, version, adapterName, ...models]
+        .join(" ").toLowerCase();
+      return {code, filename, category, description, source, url, version, sha256,
+        adapterName, versionBasis, kind, models, view, search};
+    });
+    const localVariants = new Map();
+    for (const row of records) {
+      if (!row.sha256 || row.url) continue;
+      const key = JSON.stringify([row.code, row.filename, row.source]);
+      if (!localVariants.has(key)) localVariants.set(key, new Set());
+      localVariants.get(key).add(row.sha256);
+    }
+    const views = {
+      adapters: {single: "adapter file", plural: "adapter files", hint: "Choose an ID to filter to that adapter."},
+      planars: {single: "reference file", plural: "reference files", hint: "System-board and expansion-unit descriptions."},
+      support: {single: "companion file", plural: "companion files", hint: "Initialisation programs, diagnostics and related files."},
+      lookup: {single: "ID lookup", plural: "ID lookups", hint: "Historical entries with an adapter description."}
+    };
+    const filters = ["category", "source", "kind", "model"];
+    const pageSize = 24;
+    const numbers = new Intl.NumberFormat("en-GB");
+    const viewButtons = Array.from(document.querySelectorAll("[data-view]"));
+    const byView = Object.fromEntries(Object.keys(views).map((key) => [key, records.filter((row) => row.view === key)]));
+    const viewGroupCounts = Object.fromEntries(Object.entries(byView).map(([view, rows]) =>
+      [view, groupRecords(rows).length]));
+    let currentView = "adapters";
+    let currentPage = 1;
+
+    function groupRecords(rows) {
+      const groups = new Map();
+      for (const row of rows) {
+        const key = row.code ? (row.kind === "Expansion unit ADF" ? "expansion:" : "") + row.code : row;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(row);
+      }
+      return [...groups.values()];
+    }
+
+    function cell(row, value, className = "") {
+      const td = row.insertCell();
+      td.className = className;
+      td.textContent = value || "—";
+      return td;
+    }
+
+    function element(tag, text, className) {
+      const item = document.createElement(tag);
+      item.textContent = text;
+      if (className) item.className = className;
+      return item;
+    }
+
+    function matchQuery(row, query) {
+      const exact = query.match(/^(?:@|0x)?0?([a-f0-9]{4})h?$/);
+      return exact ? row.code?.toLowerCase() === exact[1] :
+        query.split(/\s+/).every((token) => row.search.includes(token));
+    }
+
+    function selectOptions(filter, selected) {
+      const select = $(filter);
+      const values = [...new Set(byView[currentView].flatMap((row) => filter === "model" ? row.models : row[filter]))]
+        .sort((a, b) => a.localeCompare(b, "en-GB"));
+      const labels = {category: "All categories", source: "All sources", kind: "All file types", model: "All machines"};
+      select.replaceChildren(new Option(labels[filter], ""), ...values.map((value) => new Option(value, value)));
+      select.value = values.includes(selected) ? selected : "";
+      select.disabled = values.length < 2;
+    }
+
+    function setView(view, selected = {}) {
+      currentView = Object.hasOwn(views, view) ? view : "adapters";
+      currentPage = 1;
+      $("model-group").hidden = currentView !== "planars";
+      $("filters").classList.toggle("with-models", currentView === "planars");
+      filters.forEach((filter) => selectOptions(filter, selected[filter]));
+      viewButtons.forEach((button) => {
+        const selectedView = button.dataset.view === currentView;
+        button.setAttribute("aria-pressed", String(selectedView));
+        button.classList.toggle("cds--content-switcher--selected", selectedView);
+      });
+    }
+
+    function saveFilters() {
+      const params = new URLSearchParams();
+      if (currentView !== "adapters") params.set("view", currentView);
+      if ($("display").value === "all") params.set("display", "all");
+      if ($("query").value.trim()) params.set("q", $("query").value.trim());
+      filters.forEach((key) => { if ($(key).value) params.set(key, $(key).value); });
+      try {
+        const hash = params.toString();
+        history.replaceState(null, "", hash ? "#" + hash : location.pathname + location.search);
+      } catch {
+        // The controls remain usable when a local viewer restricts history changes.
+      }
+    }
+
+    function pickCode(code, resetView = false) {
+      if (resetView) setView("adapters");
+      $("query").value = code;
+      filters.forEach((filter) => { $(filter).value = ""; });
+      currentPage = 1;
+      render();
+      $("query").focus();
+    }
+
+    function drawRecord(entry, planar) {
+      const row = document.createElement("tr");
+      const key = cell(row, entry.code, "code-cell");
+      if (entry.code) {
+        const button = element("button", entry.code, "code cds--link");
+        button.type = "button";
+        button.setAttribute("aria-label", "Show records for " + entry.code);
+        button.addEventListener("click", () => pickCode(entry.code));
+        key.replaceChildren(button);
+      }
+      const filename = cell(row, entry.filename, "filename");
+      const localKey = JSON.stringify([entry.code, entry.filename, entry.source]);
+      if (entry.sha256 && !entry.url && localVariants.get(localKey)?.size > 1) {
+        const hash = element("span", "SHA-256 " + entry.sha256.slice(0, 8), "row-detail");
+        hash.title = entry.sha256;
+        filename.append(hash);
+      }
+      const version = cell(row, entry.version, "version");
+      if (entry.versionBasis === "Source catalogue") {
+        version.append(element("span", "Catalogue", "row-detail"));
+      }
+      cell(row, entry.adapterName, "adapter-name");
+      cell(row, entry.category, "category");
+      cell(row, entry.description, "description");
+      if (planar) {
+        const machine = cell(row, "Model unspecified", "machine");
+        if (entry.models.length) {
+          const list = element("ul", "", "machine-list");
+          list.append(...entry.models.map((model) => element("li", model)));
+          const citation = element("a", "Planar ID list", "row-detail cds--link");
+          citation.href = data.planarSource;
+          citation.target = "_blank";
+          citation.rel = "noopener noreferrer";
+          machine.replaceChildren(list, citation);
+        }
+      }
+      const source = cell(row, entry.source, "source");
+      if (entry.url) {
+        const link = element("a", entry.source, "cds--link");
+        link.href = entry.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        source.replaceChildren(link);
+      }
+      return row;
+    }
+
+    function drawGroup(group, planar) {
+      const representative = group.find((entry) => entry.adapterName) || group[0];
+      const row = drawRecord(representative, planar);
+      if (group.length === 1) return row;
+      const label = numbers.format(group.length) + " records";
+      const toggle = element("button", label, "record-toggle cds--link");
+      toggle.type = "button";
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", label + " for " + representative.code);
+      let children = [];
+      toggle.addEventListener("click", () => {
+        const expanding = toggle.getAttribute("aria-expanded") === "false";
+        if (expanding && !children.length) {
+          children = group.filter((entry) => entry !== representative).map((entry) => {
+            const child = drawRecord(entry, planar);
+            child.className = "variant";
+            return child;
+          });
+          row.after(...children);
+        }
+        for (const child of children) child.hidden = !expanding;
+        toggle.setAttribute("aria-expanded", String(expanding));
+      });
+      row.cells[0].append(toggle);
+      return row;
+    }
+
+    function render(updateUrl = true) {
+      const query = $("query").value.trim().toLowerCase();
+      $("clear-query").hidden = !$("query").value;
+      const selected = Object.fromEntries(filters.map((key) => [key, $(key).value]));
+      const matches = byView[currentView].filter((row) =>
+        filters.every((key) => !selected[key] ||
+          (key === "model" ? row.models.includes(selected[key]) : row[key] === selected[key]))
+        && matchQuery(row, query));
+      const grouped = $("display").value === "grouped";
+      const items = grouped ? groupRecords(matches) : matches;
+      const pages = Math.max(1, Math.ceil(items.length / pageSize));
+      currentPage = Math.max(1, Math.min(currentPage, pages));
+      const start = (currentPage - 1) * pageSize;
+      const end = Math.min(items.length, start + pageSize);
+      const detail = views[currentView];
+      const planar = currentView === "planars";
+      const unit = grouped ? (items.length === 1 ? "group" : "groups") :
+        (items.length === 1 ? detail.single : detail.plural);
+      $("status").textContent = numbers.format(items.length) + " " + unit;
+      $("context").textContent = grouped ? numbers.format(matches.length) + " matching source records" : detail.hint;
+      $("machine-heading").hidden = !planar;
+      for (const button of viewButtons) {
+        const view = button.dataset.view;
+        button.querySelector("small").textContent = numbers.format(grouped ? viewGroupCounts[view] : byView[view].length);
+      }
+      $("results").replaceChildren(...items.slice(start, end).map((item) =>
+        grouped ? drawGroup(item, planar) : drawRecord(item, planar)));
+      $("table-scroll").hidden = !matches.length;
+      $("empty").hidden = !!matches.length;
+      $("pagination").hidden = pages === 1;
+      $("page-label").textContent = numbers.format(start + 1) + "–" + numbers.format(end) + " of " + numbers.format(items.length);
+      $("previous").disabled = currentPage === 1;
+      $("next").disabled = currentPage === pages;
+      if (updateUrl) saveFilters();
+    }
+
+    for (const filter of filters) $(filter).addEventListener("change", () => { currentPage = 1; render(); });
+    $("display").addEventListener("change", () => { currentPage = 1; render(); });
+    $("query").addEventListener("input", () => { currentPage = 1; render(); });
+    $("clear-query").addEventListener("click", () => {
+      $("query").value = "";
+      currentPage = 1;
+      render();
+      $("query").focus();
+    });
+    $("clear").addEventListener("click", () => {
+      $("query").value = "";
+      filters.forEach((filter) => { $(filter).value = ""; });
+      currentPage = 1;
+      render();
+      $("query").focus();
+    });
+    $("previous").addEventListener("click", () => { currentPage--; render(); });
+    $("next").addEventListener("click", () => { currentPage++; render(); });
+    viewButtons.forEach((button) => button.addEventListener("click", () => { setView(button.dataset.view); render(); }));
+    document.querySelectorAll("[data-example]").forEach((button) =>
+      button.addEventListener("click", () => pickCode(button.dataset.example, true)));
+
+    function loadFilters() {
+      const params = new URLSearchParams(location.hash.slice(1));
+      $("query").value = params.get("q") || "";
+      $("display").value = params.get("display") === "all" ? "all" : "grouped";
+      setView(params.get("view"), Object.fromEntries(filters.map((filter) => [filter, params.get(filter)])));
+      render();
+    }
+
+    window.addEventListener("hashchange", loadFilters);
+    loadFilters();
+  </script>
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="application-version" content="2.1.0">
+  <meta name="description" content="Find IBM PS/2 and PC Server memory by machine type, model suffix, FRU or module marking.">
+  <title>Memory Lookup · PS/2 Toolbox</title>
+  <link rel="stylesheet" href="../assets/carbon.css">
+  <script src="../assets/routes.js"></script>
+  <style>
+    :root { font: 100%/1.5 "IBM Plex Sans", system-ui, sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; color: var(--cds-text-primary); background: var(--cds-background); }
+    button, input, select { font: inherit; }
+    button:not(:disabled), summary { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--cds-focus); outline-offset: 2px; }
+    .shell { width: min(100% - 4rem, 90rem); margin-inline: auto; }
+    .hero { padding-block: 2rem; }
+    .hero h1 { margin: 0; }
+    .hero p { margin: .5rem 0 0; color: var(--cds-text-secondary); }
+    .panel { margin-bottom: 1.5rem; background: var(--cds-layer-01); }
+    .controls, .result-head, .reference { padding: 1rem; }
+    .search-row { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem 1rem; }
+    .search-row > div:first-child { flex: 1 1 26rem; min-width: 0; }
+    .examples { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; min-height: 2.5rem; }
+    .examples button { margin: 0; }
+    .filter-row {
+      display: grid; gap: 1rem; align-items: end; margin-top: 1rem;
+      grid-template-columns: minmax(8rem, 1fr) minmax(12rem, 2.5fr) minmax(7rem, 1fr) minmax(8rem, 1fr) auto;
+    }
+    .filter-row > div { min-width: 0; }
+    .controls input, .controls select { background: var(--cds-field-02); }
+    .controls #clear { min-block-size: 2.5rem; padding-block: .5rem; }
+    .result-head p, .reference p { margin: .25rem 0; }
+    #status { font-weight: 600; }
+    .secondary { color: var(--cds-text-secondary); font-size: .875rem; }
+    .table-scroll { overflow-x: auto; }
+    .table-scroll:focus-visible { outline-offset: -2px; }
+    .table-scroll .cds--data-table { min-width: 58rem; }
+    .table-scroll .pin-table { min-width: 29rem; margin-top: .75rem; }
+    .table-scroll .cds--data-table th, .table-scroll .cds--data-table td {
+      height: auto; padding: .75rem 1rem; overflow-wrap: anywhere; vertical-align: top;
+    }
+    .table-scroll th { white-space: nowrap; }
+    .table-scroll .cds--data-table .memory-type { min-inline-size: 9rem; overflow-wrap: normal; }
+    .numbers { font-family: Consolas, monospace; }
+    .parts { min-width: 7rem; }
+    td .secondary { display: block; }
+    .machine-list { padding-inline-start: 1rem; margin: .4rem 0 0; }
+    .machine-list li + li { margin-top: .4rem; }
+    .machine-cell { width: 24%; min-width: 12rem; }
+    .source-cell { min-width: 8rem; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--cds-border-subtle-01); }
+    .empty { padding: 1rem; margin: 0; }
+    .reference h2 { margin: 0 0 .5rem; font-size: 1.5rem; font-weight: 400; }
+    .reference h3 { margin: 1rem 0 .5rem; font-size: 1rem; font-weight: 600; }
+    .reference summary { color: var(--cds-link-primary); font-weight: 600; }
+    .reference .evidence-search { width: min(100%, 25rem); margin-top: 1rem; }
+    .reference .evidence-search input { padding-inline: 1rem; }
+    .reference details + details { margin-top: .75rem; }
+    .reference .small-table { min-width: 36rem; margin-block: .75rem; }
+    .pinout-controls { max-width: 24rem; margin-block: .75rem; }
+    .pin-scroll { overflow-x: auto; padding: .25rem; }
+    .pin-group { display: grid; grid-template-columns: repeat(12, minmax(2.25rem, 1fr)); gap: .25rem; min-width: 31rem; margin-bottom: .25rem; }
+    .pin-group.planar { grid-template-columns: repeat(32, 2.25rem); }
+    .pin {
+      min-height: 2.25rem; border: 1px solid var(--cds-border-subtle-01);
+      background: var(--cds-layer-02); color: var(--cds-text-primary); font-size: .8rem;
+    }
+    .pin-power { background: var(--cds-tag-background-red, #ffd7d9); }
+    .pin-ground { background: var(--cds-tag-background-gray, #e0e0e0); }
+    .pin-detect { background: var(--cds-tag-background-cyan, #bae6ff); }
+    .pin[aria-pressed="true"] { border-color: var(--cds-focus); box-shadow: inset 0 0 0 1px var(--cds-focus); }
+    .pin-state { min-height: 1.5rem; font-weight: 600; }
+    .evidence-list { list-style: none; margin: .75rem 0 1rem; padding: 0; }
+    .evidence-list li { padding: .75rem 0; border-top: 1px solid var(--cds-border-subtle-01); }
+    .evidence-list li p { max-width: 76ch; }
+    #reference-index details { margin: .75rem 0; }
+    #reference-index ul { padding-inline-start: 1.5rem; }
+    .memory-nav { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: 1rem; }
+    .reference > section { margin-top: 1.5rem; }
+    .reference :target, #memory-search { scroll-margin-top: 1rem; }
+    .source-list {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+      gap: .75rem; list-style: none; padding: 0; margin: .5rem 0 0;
+    }
+    .source-list li { padding: .75rem; background: var(--cds-background); }
+    footer { padding-bottom: 1.5rem; }
+    @media (max-width: 58rem) {
+      .filter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+    }
+    @media (max-width: 48rem) {
+      .shell { width: calc(100% - 2rem); }
+      .hero { padding-block: 1.5rem; }
+      .hero h1 { font-size: clamp(2rem, 8vw, 2.625rem); }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+  <a class="brand" href="../">PS/2 Toolbox</a>
+  <nav class="toolbox-nav" aria-label="PS/2 Toolbox">
+    <a href="../mca-lookup/" data-tool="mca">MCA lookup</a>
+    <a href="../memory-lookup/" data-tool="memory" aria-current="page">Memory lookup</a>
+  </nav>
+  <a class="about-link cds--link" href="../about/">About</a>
+</header>
+
+  <svg width="0" height="0" hidden aria-hidden="true">
+    <symbol id="select-chevron" viewBox="0 0 16 16"><path d="M8 11 3 6l.7-.7L8 9.6l4.3-4.3.7.7z"/></symbol>
+  </svg>
+  <main class="shell">
+    <div class="hero">
+      <h1>Memory Lookup</h1>
+      <p>Find memory for an IBM machine or identify a module from its part number.</p>
+      <nav class="memory-nav" aria-label="Memory Lookup sections">
+        <a class="cds--link" href="#memory-search">Search memory</a>
+        <a class="cds--link" href="#pd-heading">Identify a 72-pin SIMM</a>
+        <a class="cds--link" href="#model-references">Model and planar references</a>
+        <a class="cds--link" href="#identification-references">Part cross-references, adapters and pinouts</a>
+      </nav>
+    </div>
+    <section id="memory-search" class="panel controls" aria-label="Search and filters">
+      <div class="search-row">
+        <div>
+          <label class="cds--label" for="query">Machine, FRU, option or module marking</label>
+          <div class="cds--search">
+            <svg class="cds--search-magnifier-icon" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="6.75" cy="6.75" r="4.25" fill="none" stroke="currentColor"/>
+              <path d="m10 10 4 4" stroke="currentColor"/>
+            </svg>
+            <input id="query" class="cds--search-input" type="search" placeholder="9595-0PT, Model 56, 92G7210…" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="examples" aria-label="Example searches">
+          <button class="cds--tag cds--tag--blue" data-query="9595-0PT" type="button">9595-0PT</button>
+          <button class="cds--tag cds--tag--blue" data-query="92G7210" type="button">92G7210</button>
+          <button class="cds--tag cds--tag--blue" data-query="7011-250" type="button">7011-250</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="cds--select">
+          <label class="cds--label" for="family">Family</label>
+          <div class="cds--select-input__wrapper"><select id="family" class="cds--select-input"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select">
+          <label class="cds--label" for="machine">Machine or card</label>
+          <div class="cds--select-input__wrapper"><select id="machine" class="cds--select-input"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select">
+          <label class="cds--label" for="size">Capacity</label>
+          <div class="cds--select-input__wrapper"><select id="size" class="cds--select-input"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <div class="cds--select">
+          <label class="cds--label" for="type">Memory type</label>
+          <div class="cds--select-input__wrapper"><select id="type" class="cds--select-input"></select>
+            <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+        </div>
+        <button id="clear" class="cds--btn cds--btn--tertiary" type="button">Clear filters</button>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="status">
+      <div class="result-head">
+        <p id="status" role="status">Loading memory catalogue…</p>
+        <p class="secondary">Open a machine listing to check the model suffix and any installation notes.</p>
+      </div>
+      <div id="table-scroll" class="table-scroll" role="region" aria-label="Memory results" tabindex="0">
+        <table class="cds--data-table cds--data-table--zebra">
+          <thead><tr><th scope="col">Capacity</th><th scope="col" class="memory-type">Type</th><th scope="col">Speed</th>
+            <th scope="col">FRU</th><th scope="col">Option</th><th scope="col">Markings and cross-references</th>
+            <th scope="col">Listed for</th><th scope="col">Source</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p id="empty" class="empty" hidden>No matching memory records. Try a different part number or clear the filters.</p>
+      <noscript><p class="empty">Enable JavaScript to search the catalogue.</p></noscript>
+      <div id="pagination" class="pagination" hidden>
+        <button id="previous" class="cds--btn cds--btn--ghost" type="button">Previous</button>
+        <span id="page-label" class="secondary"></span>
+        <button id="next" class="cds--btn cds--btn--ghost" type="button">Next</button>
+      </div>
+    </section>
+    <section class="panel reference" aria-labelledby="references-heading">
+      <h2 id="references-heading">Memory references</h2>
+      <section aria-labelledby="pd-heading">
+        <h3 id="pd-heading">Identify a 72-pin SIMM</h3>
+          <details id="presence-detect">
+            <summary>View presence-detect patterns</summary>
+            <p>Read pins 70, 69, 68 and 67 in that order. <strong>X</strong> means connected to ground (pin 72). Several modules share the same code. Use the markings and the machine-specific source to confirm the module.</p>
+            <div class="table-scroll" role="region" aria-label="Presence-detect patterns" tabindex="0">
+              <table class="cds--data-table cds--data-table--zebra pin-table">
+                <thead><tr><th scope="col">Bits</th><th scope="col">Pins</th><th scope="col">Capacity</th><th scope="col">Speed</th><th scope="col">Reference</th></tr></thead>
+                <tbody id="patterns"></tbody>
+              </table>
+            </div>
+          </details>
+      </section>
+      <section id="model-references" aria-labelledby="reference-heading" tabindex="-1">
+        <h3 id="reference-heading">Model and planar references</h3>
+        <p>Check the board revision or model suffix before choosing a module. Maximums can refer to the planar, the whole machine or a particular configuration.</p>
+        <div class="evidence-search">
+          <label class="cds--label" for="evidence-query">Find a model, planar or part in the notes</label>
+          <input class="cds--text-input cds--search-input" id="evidence-query" type="text" placeholder="8555, Lacuna, 87F9977…" autocomplete="off">
+        </div>
+        <p class="secondary" id="evidence-status" role="status"></p>
+        <ul id="evidence-notes" class="evidence-list"></ul>
+        <details id="planar-audit">
+          <summary>PS/2 planar and connector check</summary>
+          <p>Board and connector observations are shown separately from part compatibility. A dash means the linked board evidence did not establish a connector type.</p>
+          <div class="evidence-search">
+            <label class="cds--label" for="planar-query">Filter by board or connector</label>
+            <input class="cds--search-input" id="planar-query" placeholder="P70, Greenock, 30-pin…" autocomplete="off">
+          </div>
+          <p id="planar-status" class="secondary" role="status"></p>
+          <div class="table-scroll" role="region" aria-label="Planar and connector results" tabindex="0">
+            <table class="cds--data-table cds--data-table--zebra small-table">
+              <thead><tr><th scope="col">Planar</th><th scope="col">Connector</th><th scope="col">Observation</th><th scope="col">Source</th></tr></thead>
+              <tbody id="planar-rows"></tbody>
+            </table>
+          </div>
+        </details>
+        <details id="reference-index">
+          <summary>Browse the source inventory</summary>
+          <p>These documents form the audit inventory. Some identify a board or machine without specifying compatible modules.</p>
+          <div id="source-inventory"></div>
+        </details>
+      </section>
+      <section id="identification-references" aria-labelledby="identification-heading" tabindex="-1">
+        <h3 id="identification-heading">Part cross-references, adapters and pinouts</h3>
+        <details id="memory-equivalents">
+          <summary>IBM option numbers, FRUs and OEM alternatives</summary>
+          <p>IBM option-to-FRU mappings identify service parts. The OEM rows are published cross-references or reports for the named modules. Check the model, parity or ECC type, and presence-detect code before substituting.</p>
+          <div class="evidence-search">
+            <label class="cds--label" for="alternative-query">IBM option, FRU or OEM part number</label>
+            <input class="cds--search-input" id="alternative-query" placeholder="92G7210, 73G3136, HYMIB07032…" autocomplete="off">
+          </div>
+          <p class="secondary" id="alternative-status" role="status"></p>
+          <div class="table-scroll" role="region" aria-label="Memory part cross-references" tabindex="0">
+            <table class="cds--data-table cds--data-table--zebra small-table">
+              <thead><tr><th scope="col">IBM option</th><th scope="col">FRU or OEM part</th><th scope="col">Evidence</th><th scope="col">Source</th></tr></thead>
+              <tbody id="alternative-rows"></tbody>
+            </table>
+          </div>
+        </details>
+        <details id="expansion-cards">
+          <summary>IBM memory expansion adapters</summary>
+          <div class="table-scroll" role="region" aria-label="Memory expansion adapters" tabindex="0">
+            <table class="cds--data-table cds--data-table--zebra small-table">
+              <thead><tr><th scope="col">Card markings</th><th scope="col">POS ID</th><th scope="col">Connector</th><th scope="col">Notes</th><th scope="col">Source</th></tr></thead>
+              <tbody id="adapter-rows"></tbody>
+            </table>
+          </div>
+        </details>
+        <details id="chip-comparison">
+          <summary>Compare individual DRAM chips</summary>
+          <p>These are chip-family candidates. A chip repair also requires matching the exact package, pinout, voltage, timing, operating mode and refresh specification.</p>
+          <div class="evidence-search">
+            <label class="cds--label" for="chip-query">Search a chip marking or organisation</label>
+            <input class="cds--search-input" id="chip-query" placeholder="TC514400, MT4C4001, 4Mx4 FPM…" autocomplete="off">
+          </div>
+          <p id="chip-status" class="secondary" role="status"></p>
+          <ul id="chip-results" class="evidence-list"></ul>
+        </details>
+        <details id="pinout-maps">
+          <summary>Explore memory connector pinouts</summary>
+          <p>Numbered contact maps. Use the linked source drawing to orient the physical board. Select a pin to see its signal.</p>
+          <div class="pinout-controls cds--select">
+            <label class="cds--label" for="pin-profile">Connector</label>
+            <div class="cds--select-input__wrapper"><select id="pin-profile" class="cds--select-input"></select>
+              <svg class="cds--select__arrow" width="16" height="16" aria-hidden="true"><use href="#select-chevron"/></svg></div>
+          </div>
+          <p class="secondary">Red = supply. Grey = ground. Blue = presence detect.</p>
+          <div id="pin-grid" class="pin-scroll" role="group" aria-label="Numbered connector contacts"></div>
+          <p id="pin-state" class="pin-state" role="status"></p>
+          <p class="secondary" id="pin-source"></p>
+          <details>
+            <summary>Model technical references and schematics</summary>
+            <ul id="pin-references" class="source-list"></ul>
+          </details>
+        </details>
+        <details id="memory-guides">
+          <summary>Memory guides and additional references</summary>
+          <ul id="guide-links" class="source-list"></ul>
+        </details>
+      </section>
+    </section>
+  </main>
+  <footer class="shell secondary">PS/2 Toolbox · Version 2.1.0</footer>
+  <script src="memory-data.js"></script>
+  <script>
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+    const {modules, machines, patterns, sources, notes, references, identification} =
+      window.ps2LookupData;
+    const perPage = 24;
+    const filters = ["family", "machine", "size", "type"];
+    const searchText = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const machineName = ({label, variants}) => [label, variants.join(" / ")].filter(Boolean).join(" · ");
+    const machineSearch = machines.map(({label, variants, aliases}) => {
+      const codes = label.match(/\b\d{4}\b/g) || [];
+      const qualified = codes.flatMap((code) => variants.map((variant) => code + variant));
+      return [label, ...variants, ...aliases, ...qualified].map(searchText);
+    });
+    const records = modules.map((row) => {
+      const fields = [row.size, row.type, row.speed, row.maker, row.ref, row.pd, row.fit,
+        ...(row.fru || []), ...(row.option || []), ...(row.marking || []), row.related];
+      return {...row, searchable: fields.filter(Boolean).map((field) => searchText(String(field)))};
+    });
+    let page = 1;
+
+    function el(tag, value, className) {
+      const element = document.createElement(tag);
+      if (value) element.textContent = value;
+      if (className) element.className = className;
+      return element;
+    }
+
+    function cell(tr, value, className) {
+      return tr.appendChild(el("td", value || "—", className));
+    }
+
+    function citation(key) {
+      const [label, url] = sources[key];
+      return sourceLink(label, url);
+    }
+
+    function sourceLink(label, url) {
+      const link = el("a", label, "cds--link");
+      link.href = url;
+      return link;
+    }
+
+    function fillOptions(id, label, entries) {
+      const select = $(id);
+      const selection = select.value;
+      select.replaceChildren(new Option(label, ""), ...entries.map(([value, text]) => new Option(text, value)));
+      if (entries.some(([value]) => value === selection)) select.value = selection;
+    }
+
+    function machineOptions() {
+      const family = $("family").value;
+      const entries = machines.flatMap((machine, id) =>
+        !family || machine.family === family ? [[String(id), machineName(machine)]] : []);
+      fillOptions("machine", "Any machine or card", entries.sort((a, b) => a[1].localeCompare(b[1], "en-GB")));
+    }
+
+    function options(values) {
+      return [...new Set(values)].map((value) => [String(value), String(value)]);
+    }
+
+    function writeRecord(row, matches) {
+      const tr = el("tr");
+      const capacity = cell(tr, row.size);
+      if (row.fit) capacity.append(el("span", row.fit, "secondary"));
+      cell(tr, row.type, "memory-type");
+      cell(tr, row.speed ? row.speed + " ns" : "");
+      cell(tr, row.fru?.join(", "), "parts numbers");
+      cell(tr, row.option?.join(", "), "parts numbers");
+      const markings = cell(tr, "", "parts");
+      const markingText = [row.maker, row.marking?.join(", ")].filter(Boolean).join(" · ");
+      if (markingText || row.related || row.pd) markings.replaceChildren();
+      if (markingText) markings.append(el("span", markingText, "numbers"));
+      if (row.related) markings.append(el("span", "IBM cross-reference · " + row.related, "secondary"));
+      if (row.pd) markings.append(el("span", "PD pins · " + row.pd, "secondary"));
+      const machine = cell(tr, "", "machine-cell");
+      if (matches.length) {
+        const details = el("details");
+        details.append(el("summary", matches.length + (matches.length === 1 ? " configuration" : " configurations")));
+        const list = el("ul", "", "machine-list");
+        matches.forEach((id) => {
+          const item = el("li", machineName(machines[id]));
+          if (machines[id].note) item.append(el("span", machines[id].note, "secondary"));
+          list.append(item);
+        });
+        details.append(list);
+        if (matches.length === 1) details.open = true;
+        machine.replaceChildren(details);
+      }
+      const source = cell(tr, "", "source-cell");
+      source.replaceChildren(citation(row.source));
+      if (row.ref) source.append(el("span", "EPRM #" + row.ref, "secondary"));
+      return tr;
+    }
+
+    function render() {
+      const selected = Object.fromEntries(filters.map((id) => [id, $(id).value]));
+      const query = $("query").value.trim().split(/\s+/).map(searchText).filter(Boolean);
+      const hasScope = Boolean(selected.machine || selected.family);
+      const results = records.flatMap((row) => {
+        if ((selected.size && row.size !== selected.size)
+            || (selected.type && (row.type || "Unspecified") !== selected.type)) return [];
+        const scopes = row.machines.filter((id) => (!selected.family || machines[id].family === selected.family)
+          && (!selected.machine || String(id) === selected.machine));
+        if (hasScope && !scopes.length) return [];
+        const matchesRow = (token) => row.searchable.some((value) => value.includes(token));
+        if (query.every(matchesRow)) return [[row, scopes]];
+        const matchingMachines = scopes.filter((id) => query.every((token) =>
+          matchesRow(token) || machineSearch[id].some((value) => value.includes(token))));
+        return matchingMachines.length ? [[row, matchingMachines]] : [];
+      });
+      const total = results.length;
+      const pages = Math.max(1, Math.ceil(total / perPage));
+      page = Math.min(page, pages);
+      const start = (page - 1) * perPage;
+      const end = Math.min(start + perPage, total);
+      $("rows").replaceChildren(...results.slice(start, end).map(([row, matches]) => writeRecord(row, matches)));
+      $("table-scroll").hidden = total === 0;
+      $("empty").hidden = total !== 0;
+      $("status").textContent = total + (total === 1 ? " matching memory record" : " matching memory records");
+      $("pagination").hidden = pages <= 1;
+      $("page-label").textContent = (start + 1) + "–" + end + " of " + total;
+      $("previous").disabled = page === 1;
+      $("next").disabled = page === pages;
+    }
+
+    function rerender() {
+      page = 1;
+      render();
+    }
+
+    function clearControls(query) {
+      $("query").value = query;
+      filters.forEach((id) => { $(id).value = ""; });
+      machineOptions();
+      rerender();
+      $("query").focus();
+    }
+
+    fillOptions("family", "All families", options(machines.map((item) => item.family).sort()));
+    fillOptions("size", "Any capacity", options(modules.map((row) => row.size))
+      .sort((a, b) => a[0].localeCompare(b[0], "en-GB", {numeric: true})));
+    fillOptions("type", "Any type", options(modules.map((row) => row.type || "Unspecified").sort()));
+    machineOptions();
+
+    $("query").addEventListener("input", rerender);
+    $("family").addEventListener("change", () => { machineOptions(); rerender(); });
+    for (const id of ["machine", "size", "type"]) $(id).addEventListener("change", rerender);
+    $("clear").addEventListener("click", () => clearControls(""));
+    document.querySelectorAll("[data-query]").forEach((button) =>
+      button.addEventListener("click", () => clearControls(button.dataset.query)));
+    $("previous").addEventListener("click", () => { page--; render(); });
+    $("next").addEventListener("click", () => { page++; render(); });
+
+    $("patterns").replaceChildren(...patterns.map(([bits, pins, size, speed, reference]) => {
+      const tr = el("tr");
+      [bits, pins, size ? size + " MB" : "", speed ? speed + " ns" : "", reference].forEach((value, index) =>
+        cell(tr, value, index < 2 ? "numbers" : ""));
+      return tr;
+    }));
+
+    function renderEvidence() {
+      const words = $("evidence-query").value.toLowerCase().match(/[a-z0-9]+/g) || [];
+      const matches = notes.filter(([model, note]) => words.every((word) => (model + " " + note).toLowerCase().includes(word)));
+      $("evidence-status").textContent = matches.length + (matches.length === 1 ? " note" : " notes");
+      $("evidence-notes").replaceChildren(...matches.map(([model, note, url, title]) => {
+        const item = el("li");
+        item.append(el("strong", model), el("p", note), sourceLink(title, url));
+        return item;
+      }));
+    }
+
+    $("evidence-query").addEventListener("input", renderEvidence);
+    $("source-inventory").replaceChildren(...Object.entries(references).map(([group, documents]) => {
+      const details = el("details");
+      const list = el("ul");
+      documents.forEach(([label, url]) => {
+        const item = el("li");
+        item.append(sourceLink(label, url));
+        list.append(item);
+      });
+      details.append(el("summary", group + " (" + documents.length + ")"), list);
+      return details;
+    }));
+
+    function referenceRow(values, title, url) {
+      const tr = el("tr");
+      for (const value of values) cell(tr, value);
+      cell(tr).replaceChildren(sourceLink(title, url));
+      return tr;
+    }
+
+    function renderPlanars() {
+      const words = $("planar-query").value.trim().split(/\s+/).map(searchText).filter(Boolean);
+      const rows = identification.planars.filter(([model, pins, note]) =>
+        words.every((word) => searchText(model + " " + pins + " " + note).includes(word)));
+      $("planar-status").textContent = rows.length + (rows.length === 1 ? " board entry" : " board entries");
+      $("planar-rows").replaceChildren(...rows.map(([model, pins, note, url]) =>
+        referenceRow([model, pins, note], "Planar reference", url)));
+    }
+
+    const knownOptions = new Map();
+    function addOption(option, fru) {
+      if (!knownOptions.has(option)) knownOptions.set(option, new Set());
+      knownOptions.get(option).add(fru);
+    }
+    for (const [option, fru] of identification.ibmFrus) addOption(option, fru);
+    for (const row of modules) for (const option of row.option || []) {
+      for (const fru of row.fru || []) addOption(option, fru);
+    }
+
+    function renderAlternatives() {
+      const query = searchText($("alternative-query").value);
+      const includes = (part) => searchText(part).includes(query);
+      const oem = identification.alternatives.filter(([option, part]) => !query || [option, part,
+        ...(knownOptions.get(option) || [])].some(includes));
+      const ibm = query ? identification.ibmFrus.filter((pair) => pair.some(includes)) : [];
+      $("alternative-status").textContent = query ? (oem.length + ibm.length) + " matching records" :
+        oem.length + " OEM references. Enter a number to include IBM option-to-FRU matches.";
+      $("alternative-rows").replaceChildren(
+        ...oem.map(([option, part, note, title, url]) => referenceRow([option, part, note], title, url)),
+        ...ibm.map(([option, fru]) => referenceRow([option, fru, "IBM option-to-FRU mapping"],
+          "IBM EPRM", identification.ibmFruUrl)));
+    }
+
+    function renderChipMatches() {
+      const query = searchText($("chip-query").value);
+      const matches = query ? identification.chipGroups.filter(([group, chips]) =>
+        searchText(group).includes(query) || chips.some(([maker, part]) =>
+          searchText(maker + part).includes(query) || query.includes(searchText(part)))) : [];
+      const rows = query ? matches.map(([group, chips]) =>
+        [group, chips.map(([maker, part]) => maker + " " + part).join(" · ")]) :
+        identification.chips.map(([group, example, alternatives]) => [group, example + " · " + alternatives]);
+      $("chip-status").textContent = query ? rows.length + " chart rows" : "Examples from the conversion chart.";
+      $("chip-results").replaceChildren(...rows.map(([group, chips]) => {
+        const li = el("li");
+        li.append(el("strong", group), el("p", chips), sourceLink("Ardent chip conversion chart", identification.chipUrl));
+        return li;
+      }));
+    }
+
+    function renderPinout() {
+      const [name, url, pins] = identification.pinouts[Number($("pin-profile").value)];
+      const model80 = name.startsWith("Model 80");
+      const groups = model80 ? ["A", "B", "C"].map((row) => pins.filter(([pin]) => pin.startsWith(row))) : [pins];
+      let selected;
+      $("pin-state").textContent = "Select a contact.";
+      $("pin-grid").replaceChildren(...groups.map((group) => {
+        const container = el("div", "", model80 ? "pin-group planar" : "pin-group");
+        container.append(...group.map(([pin, signal]) => {
+          const kind = signal.startsWith("+5") ? "pin-power" : signal === "Ground" ? "pin-ground" :
+            signal.startsWith("Presence Detect") ? "pin-detect" : "";
+          const button = el("button", pin, "pin " + kind);
+          button.type = "button";
+          button.title = signal;
+          button.setAttribute("aria-label", pin + " · " + signal);
+          button.setAttribute("aria-pressed", "false");
+          button.addEventListener("click", () => {
+            selected?.setAttribute("aria-pressed", "false");
+            button.setAttribute("aria-pressed", "true");
+            selected = button;
+            $("pin-state").textContent = "Pin " + pin + " · " + signal;
+          });
+          return button;
+        }));
+        return container;
+      }));
+      $("pin-source").replaceChildren(sourceLink("Source diagram and variant notes", url));
+      if (model80) {
+        $("pin-source").append(" · ", sourceLink("IBM Type 3 pin table", identification.model80Manual),
+          " · A16 and A18 are reserved on Types 1 and 2.");
+      }
+    }
+
+    function renderSourceList(id, links) {
+      $(id).replaceChildren(...links.map(([title, url]) => {
+        const li = el("li");
+        li.append(sourceLink(title, url));
+        return li;
+      }));
+    }
+
+    $("adapter-rows").replaceChildren(...identification.adapters.map(([marks, ids, pins, note, url]) => {
+      const tr = referenceRow([marks, ids, pins, note], "Ardent expansion adapter reference", url);
+      if (ids) {
+        tr.cells[1].replaceChildren();
+        ids.split(" / ").forEach((id, index) => {
+          if (index) tr.cells[1].append(" / ");
+          tr.cells[1].append(sourceLink(id, window.ps2Page("../mca-lookup/") + "#q=" + encodeURIComponent(id)));
+        });
+      }
+      return tr;
+    }));
+    renderSourceList("guide-links", identification.guides);
+    renderSourceList("pin-references", identification.pinReferences);
+    $("pin-profile").replaceChildren(...identification.pinouts.map(([title], index) => new Option(title, String(index))));
+    $("pin-profile").value = "1";
+    $("planar-query").addEventListener("input", renderPlanars);
+    $("alternative-query").addEventListener("input", renderAlternatives);
+    $("chip-query").addEventListener("input", renderChipMatches);
+    $("pin-profile").addEventListener("change", renderPinout);
+    function openReference() {
+      const id = location.hash.slice(1);
+      const target = $(id === "pd-heading" ? "presence-detect" : id);
+      if (target instanceof HTMLDetailsElement) target.open = true;
+    }
+    openReference();
+    window.addEventListener("hashchange", openReference);
+    renderPlanars();
+    renderAlternatives();
+    renderChipMatches();
+    renderPinout();
+    renderEvidence();
+    render();
+  </script>
+</body>
+</html>
