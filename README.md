@@ -1,9 +1,10 @@
-# MCA ADF Lookup
+# PS/2 Toolbox
 
-Search Micro Channel Adapter Description Files by POS ID, filename, adapter name or version. Filter by source or category and expand grouped results to see variants.
+Two offline-capable IBM hardware lookups from public references.
 
-The public catalogue includes records from Ardent Tools, MCA Mafia, the IBM PCCBBS mirror, MCABase, MCA.DAT and WonderMCA. Source links are provided with the records.
+- [MCA lookup](https://niklasrichardson.github.io/mca-adf-lookup/) searches adapter descriptions, variants, planar IDs and companion files.
+- [Memory lookup](https://niklasrichardson.github.io/mca-adf-lookup/memory.html) joins the IBM EPRM machine and part-number tables with OEM markings and model-specific memory references.
 
-Open `index.html` directly to use the catalogue offline. GitHub Pages serves the same file from the root of `main`. To update the published catalogue, replace `index.html` with a fresh public export from PS/2 Toolbox.
+The Toolbox bar links both pages. Each page documents the sources for its records.
 
-The page embeds Carbon Design System styles and IBM Plex Sans with their licences.
+To use the site offline, keep `index.html` and `memory.html` in the same directory. To update the live site, regenerate both public exports from PS/2 Toolbox and replace the HTML on the `main` branch. The pages embed Carbon Design System styles and IBM Plex Sans with their licences.
