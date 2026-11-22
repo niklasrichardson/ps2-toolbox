@@ -21,7 +21,7 @@
   const numberFormat = new Intl.NumberFormat("en-GB");
   const methodRank = {
     "manual parts list": 0, "FRU column": 1, "FRU index": 2, "manual FRU field": 3,
-    "service parts column": 4, "FRU text column": 5, "FRU label": 6,
+    "service parts column": 4, "FRU text column": 5, "picture index FRU": 6, "FRU label": 7,
   };
   const normalise = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const families = new Set();
